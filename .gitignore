@@ -1,0 +1,19 @@
+# Ignore Virtual Environment
+venv/
+env/
+__pycache__/
+
+# Ignore Large AI Models (They will download automatically)
+*.h5
+*.pt
+*.tflite
+*.weights
+
+# Ignore Dataset Images (Too many files)
+data/
+datasets/
+faces/
+
+# Ignore System Files
+.DS_Store
+.vscode/
