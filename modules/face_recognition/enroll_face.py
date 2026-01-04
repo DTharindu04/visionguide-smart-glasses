@@ -11,12 +11,12 @@ def enroll_person(person_name, num_samples=5):
     database = FaceDatabase()
 
     cap = cv2.VideoCapture(0)
-    collected = 0
+    embeddings = []
 
     print(f"[INFO] Enrolling face for: {person_name}")
     print("[INFO] Press 'c' to capture, 'q' to quit")
 
-    while collected < num_samples:
+    while len(embeddings) < num_samples:
         ret, frame = cap.read()
         if not ret:
             break
@@ -31,7 +31,7 @@ def enroll_person(person_name, num_samples=5):
         cv2.imshow("Face Enrollment", frame)
         key = cv2.waitKey(1) & 0xFF
 
-        # Capture face only when 'c' is pressed
+        # Capture only when user presses 'c'
         if key == ord('c'):
             if len(faces) == 0:
                 print("[WARN] No face detected. Try again.")
@@ -47,18 +47,26 @@ def enroll_person(person_name, num_samples=5):
                 print("[WARN] Embedding failed. Try again.")
                 continue
 
-            database.add_face(person_name, embedding)
-            collected += 1
+            embeddings.append(embedding)
+            print(f"[INFO] Sample {len(embeddings)}/{num_samples} captured")
 
-            print(f"[INFO] Sample {collected}/{num_samples} saved")
-            cv2.waitKey(400)  # small delay to avoid duplicate captures
+            cv2.waitKey(400)  # avoid duplicate captures
 
         elif key == ord('q'):
             break
 
     cap.release()
     cv2.destroyAllWindows()
-    print("[INFO] Enrollment completed.")
+
+    # ---- AVERAGE & NORMALIZE ----
+    if len(embeddings) == num_samples:
+        avg_embedding = np.mean(embeddings, axis=0)
+        avg_embedding = avg_embedding / np.linalg.norm(avg_embedding)
+
+        database.add_face(person_name, avg_embedding)
+        print("[INFO] Enrollment completed with averaged embedding.")
+    else:
+        print("[WARN] Enrollment incomplete. No data saved.")
 
 
 if __name__ == "__main__":
