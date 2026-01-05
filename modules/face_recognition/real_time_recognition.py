@@ -3,6 +3,7 @@ from modules.face_recognition.face_detection import FaceDetector
 from modules.face_recognition.face_embedding import FaceEmbedder
 from modules.face_recognition.face_database import FaceDatabase
 from modules.face_recognition.face_matching import FaceMatcher
+from modules.audio_feedback.tts_engine import TTSEngine
 
 
 def run_face_recognition():
@@ -10,8 +11,13 @@ def run_face_recognition():
     embedder = FaceEmbedder()
     database = FaceDatabase()
     matcher = FaceMatcher(threshold=0.75)
+    tts = TTSEngine()
 
     cap = cv2.VideoCapture(0)
+
+    UNKNOWN_LIMIT = 15
+    unknown_counter = 0
+    last_spoken = None
 
     print("[INFO] Real-time face recognition started")
     print("[INFO] Press 'q' to quit")
@@ -22,9 +28,7 @@ def run_face_recognition():
             break
 
         faces = detector.detect_faces(frame)
-
-        # Load database embeddings
-        known_faces = database.get_all_faces()
+        known_faces = database.get_average_embeddings()
 
         for face in faces:
             x, y, w, h = face["box"]
@@ -36,14 +40,27 @@ def run_face_recognition():
 
             name, score = matcher.find_best_match(embedding, known_faces)
 
-            # Draw bounding box
+            # UNKNOWN HANDLING
+            if name == "Unknown":
+                unknown_counter += 1
+
+                if unknown_counter == UNKNOWN_LIMIT and last_spoken != "Unknown":
+                    tts.speak("Unknown person ahead")
+                    last_spoken = "Unknown"
+            else:
+                unknown_counter = 0
+
+                if name != last_spoken:
+                    tts.speak(f"{name} in front of you")
+                    last_spoken = name
+
+            # DRAW UI
             color = (0, 255, 0) if name != "Unknown" else (0, 0, 255)
             cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
 
-            label = f"{name} ({score})"
             cv2.putText(
                 frame,
-                label,
+                f"{name} ({score})",
                 (x, y - 10),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.6,
@@ -51,9 +68,7 @@ def run_face_recognition():
                 2
             )
 
-            # 👉 Later: send `name` to TTS module
-            # audio_engine.speak(name)
-
+        # REQUIRED FOR CAMERA DISPLAY
         cv2.imshow("Smart Glasses - Face Recognition", frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
