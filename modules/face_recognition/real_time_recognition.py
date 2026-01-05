@@ -3,7 +3,7 @@ from modules.face_recognition.face_detection import FaceDetector
 from modules.face_recognition.face_embedding import FaceEmbedder
 from modules.face_recognition.face_database import FaceDatabase
 from modules.face_recognition.face_matching import FaceMatcher
-from modules.audio_feedback.tts_engine import TTSEngine
+from modules.audio_feedback.audio_logic import SmartGlassAudio
 
 
 def run_face_recognition():
@@ -11,7 +11,7 @@ def run_face_recognition():
     embedder = FaceEmbedder()
     database = FaceDatabase()
     matcher = FaceMatcher(threshold=0.75)
-    tts = TTSEngine()
+    audio  = SmartGlassAudio()
 
     cap = cv2.VideoCapture(0)
 
@@ -45,13 +45,13 @@ def run_face_recognition():
                 unknown_counter += 1
 
                 if unknown_counter == UNKNOWN_LIMIT and last_spoken != "Unknown":
-                    tts.speak("Unknown person ahead")
+                    audio.pygame_speak("Unknown person ahead")
                     last_spoken = "Unknown"
             else:
                 unknown_counter = 0
 
                 if name != last_spoken:
-                    tts.speak(f"{name} in front of you")
+                    audio.pygame_speak(f"{name} in front of you")
                     last_spoken = name
 
             # DRAW UI
