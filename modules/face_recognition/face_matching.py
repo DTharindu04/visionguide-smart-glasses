@@ -3,34 +3,37 @@ from scipy.spatial.distance import cosine
 
 
 class FaceMatcher:
-    def __init__(self, threshold=0.75):
+    def __init__(self, threshold=0.75, min_margin=0.05):
         """
-        threshold: cosine similarity threshold
-        Recommended:
-        - FaceNet : 0.7 – 0.8
+        threshold   : minimum similarity to accept a match
+        min_margin  : gap between best and second-best match
         """
         self.threshold = threshold
+        self.min_margin = min_margin
 
     def cosine_similarity(self, emb1, emb2):
         return 1 - cosine(emb1, emb2)
 
-    def find_best_match(self, query_embedding, database_embeddings):
+    def find_best_match(self, query_embedding, known_faces):
         """
-        query_embedding: numpy array
-        database_embeddings: list of (name, embedding)
+        known_faces: list of (name, embedding)
         """
+        scores = []
 
-        best_name = "Unknown"
-        best_score = -1
+        for name, emb in known_faces:
+            score = self.cosine_similarity(query_embedding, emb)
+            scores.append((name, score))
 
-        for name, db_embedding in database_embeddings:
-            score = self.cosine_similarity(query_embedding, db_embedding)
+        if len(scores) == 0:
+            return "Unknown", 0.0
 
-            if score > best_score:
-                best_score = score
-                best_name = name
+        scores.sort(key=lambda x: x[1], reverse=True)
 
-        if best_score >= self.threshold:
+        best_name, best_score = scores[0]
+        second_score = scores[1][1] if len(scores) > 1 else 0
+
+        # Decision logic
+        if best_score >= self.threshold and (best_score - second_score) >= self.min_margin:
             return best_name, round(best_score, 3)
         else:
             return "Unknown", round(best_score, 3)
