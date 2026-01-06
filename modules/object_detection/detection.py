@@ -6,7 +6,7 @@ class ObjectDetector:
     def __init__(self):
         print("Loading NANO TFLite Model (High Speed)...")
         # 1. Load the NANO model
-        self.model = torch.hub.load('yolov5', 'custom', path='yolov5n-fp16.tflite', source='local')
+        self.model = torch.hub.load('yolov5', 'yolov5n', source='local')
         
         # 2. RESTORE NAMES (Nano TFLite sometimes forgets these)
         self.model.names = [
