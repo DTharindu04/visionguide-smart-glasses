@@ -24,7 +24,7 @@ Extra (research extension):
 Quit: press Q in the camera window.
 """
 
-# ---------- INIT AUDIO ONCE ----------
+# -------- INIT AUDIO ONCE ----------
 pygame.mixer.init()
 
 # Folder to save generated audio (cache improves TTS time)
