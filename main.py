@@ -22,7 +22,7 @@ Extra (research extension):
   (Size is simulated now; later use YOLO bounding-box area.)
 
 Quit: press Q in the camera window.
-"""
+""
 
 # ---------- INIT AUDIO ONCE ----------
 pygame.mixer.init()
