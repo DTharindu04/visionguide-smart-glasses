@@ -145,7 +145,7 @@ try:
             # 6) Total end-to-end latency
             Ttotal = time.time() - Tstart
 
-            # Print timing + debug (PP1 evidence)
+            #Print timing + debug (PP1 evidence)
             print(
                 f"Tcam={Tcam:.2f}s | Tproc={Tproc:.2f}s | "
                 f"Ttts={Ttts:.2f}s | Taudio={Taudio:.2f}s | TOTAL={Ttotal:.2f}s"
